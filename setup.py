@@ -14,6 +14,9 @@ extensions=[
             ["PLegendre.pyx"],
             include_dirs=[numpy.get_include()],
             extra_compile_args=["-w"]
+            ),
+    Extension("mi_cython",
+            ["mi_cython.pyx"]
             )
 ]
 
