@@ -72,7 +72,7 @@ rcv = exp((-1)*(r-center_rcv)**2 / (2.0*width**2))
 src_2x = np.append(np.zeros(nr), src)
 rcv_2x = np.append(np.zeros(nr), rcv)
 
-for omegai in xrange((procid*ndiv//nproc),(procid*ndiv//nproc+8)):
+for omegai in xrange((procid*ndiv//nproc),(procid*ndiv//nproc+4)):
 	omega = nu [ omegai] * 2*pi
 	rhoomega2 = rho*(omega**2 - N2)
 	xisrc, psrc, xisrcatrcv, xisrcatsrc, psrcatrcv, xircv, prcv, xisrc_denkernel ,xisrc_sskernel, psrc_denkernel, psrc_sskernel,xircv_sskernel, prcv_sskernel =  ([] for i in range(13))
