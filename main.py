@@ -3,7 +3,8 @@ import numpy as np
 import mi_cython as mc
 import os
 from scipy import interpolate
-save_path = "/scratch/samrat/kernel/greens/"
+save_path = "/scratch/jishnu/kernel/greens/"
+codedir="/home/jishnu/SoKer"
 pi = np.pi
 exp = np.exp
 sqrt = np.sqrt
@@ -31,8 +32,10 @@ center_src = 1. -(200. * 10**5)/rsun;
 center_rcv = 1. +(200. * 10**5)/rsun
 
 nu = np. linspace ( numin, numax, ndiv) * 0.001
-dmpnu = np.loadtxt("m585q.4816" ,usecols= [2])*10**(-6) 
-fwhm = np.loadtxt("m585q.4816" ,usecols= [4])*10**(-6)
+
+dampingfile=os.path.join(codedir,"m585q.4816")
+dmpnu = np.loadtxt(dampingfile,usecols= [2])*10**(-6) 
+fwhm = np.loadtxt(dampingfile,usecols= [4])*10**(-6)
 points = zip(dmpnu, fwhm)
 points = sorted(points, key=lambda point: point[0])
 dmpnu, fwhm = zip(*points)
@@ -46,7 +49,8 @@ sigma = (sigma + 1j*damping(sigma))*diml/dimc
 dnu = derivfd(nu)
 fnu = (-1)*(nu**2)*exp(-(nu-nu0)**2 / (2*sigma**2))
 
-r, c, rho, p, Gamma_1, T= np.loadtxt("JCD_modelfull", unpack=True)
+solar_model=os.path.join(codedir,"JCD_modelfull")
+r, c, rho, p, Gamma_1, T= np.loadtxt(solar_model, unpack=True)
 r = r[::-1][::sampling]
 nr = np.size(r)
 c = c[::-1][::sampling]
