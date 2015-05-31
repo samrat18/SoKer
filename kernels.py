@@ -1,3 +1,7 @@
+#~ Date: 31 May 2015
+#~ Samrat Halder
+
+
 from __future__ import division
 import numpy as np
 import PLegendre
