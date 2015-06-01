@@ -63,13 +63,13 @@ lat, lon, cosine_chi_src,  dcos_chi_dtheta_src, dcos_chi_dphi_src, kss_d2p_dcos_
                                                                                                     nlat,nlon,src_lat,src_lon)
 
 LP_src_deriv=np.empty((3,ellmax+1,nlat,nlon))
-LP_src_deriv[:]=PLegendre.compute_Pl_and_2_derivs_2Darray(ellmax,cosine_chi_src)
+PLegendre.compute_Pl_and_2_derivs_inplace(ellmax,cosine_chi_src,LP_src_deriv)
 
 lat , lon, cosine_chi_rcv, dcos_chi_dtheta_rcv, dcos_chi_dphi_rcv, kss_d2p_dcos_rcv, kss_dp_dcos_rcv = lat_lon( 
                                                                                                     nlat,nlon,rcv_lat,rcv_lon)
 
 LP_rcv_deriv=np.empty((3,ellmax+1,nlat,nlon))
-LP_rcv_deriv[:]=PLegendre.compute_Pl_and_2_derivs_2Darray(ellmax,cosine_chi_rcv)
+PLegendre.compute_Pl_and_2_derivs_inplace(ellmax,cosine_chi_rcv,LP_rcv_deriv)
 
 kss_d2p_dcos_src_3d=np.atleast_3d(kss_d2p_dcos_src).transpose(2,0,1)
 kss_dp_dcos_src_3d=np.atleast_3d(kss_dp_dcos_src).transpose(2,0,1)
