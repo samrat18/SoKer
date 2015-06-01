@@ -1,15 +1,9 @@
-#~ Date: 31 May 2015
-#~ Samrat Halder
-
-
 from __future__ import division
 import numpy as np
 import PLegendre
 import os
-from tempfile import mkdtemp
 import tensorproduct
 
-tempdir=mkdtemp()
 sin=np.sin
 cos=np.cos
 pi=np.pi
@@ -28,14 +22,15 @@ ellmax = 500
  
 
 path = '/scratch/jishnu/kernel/greens'
-directory_kSS = '/scratch/samrat/kernel/greens/sound_speed_individual/'
+directory_kSS = '/scratch/jishnu/kernel/greens/sound_speed_individual/'
 
 if not os.path.exists(directory_kSS):
     os.makedirs(directory_kSS)
-directory_kD = '/scratch/samrat/kernel/greens/density_individual/'
 
+directory_kD = '/scratch/jishnu/kernel/greens/density_individual/'
 if not os.path.exists(directory_kD):
     os.makedirs(directory_kD)
+
 nr = np.load(os.path.join(path,'omega-100.npz'))['r'].shape
 
 def lat_lon(nlat,nlon,lat0,lon0):
@@ -149,7 +144,7 @@ def sum_over_l_for_omega(iOmega):
 kernel_density = np.zeros((nr,nlat,nlon),dtype=complex)    
 kernel_sspeed = np.zeros((nr,nlat,nlon),dtype=complex)
 
-for omegai in xrange(procid*ndiv/nproc : (procid*ndiv/nproc+20)):
+for omegai in xrange(procid*ndiv//nproc,((procid+1)*ndiv//nproc)):
 
     kernel_densityi, kernel_sspeedi = sum_over_l_for_omega(omegai)
     
