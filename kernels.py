@@ -127,16 +127,16 @@ def sum_over_l_for_omega(iOmega):
         norm=(2*ell+1)/(4*pi)
         
         kd_xsrc += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['xisrc_denkernel'][ell],LP_src_deriv[0,ell],out)
+                        g_data['xisrc_denkernel'][ell],LP_src_deriv[0,ell],out)*norm
         
         kd_xircv += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['xircv'][ell],LP_rcv_deriv[0,ell],out)*norm**2.
+                        g_data['xircv'][ell],LP_rcv_deriv[0,ell],out)*norm
         
         kd_psrc += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['psrc_denkernel'][ell],LP_src_deriv_kd[ell],out)
+                        g_data['psrc_denkernel'][ell],LP_src_deriv_kd[ell],out)*norm
         
         kd_prcv += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['prcv'][ell], LP_rcv_deriv_kd[ell],out)*norm**2.
+                        g_data['prcv'][ell], LP_rcv_deriv_kd[ell],out)*norm
         
         kss_src += tensorproduct.oneD_and_twoD_to_threeD(
                     g_data['xisrc_sskernel'][ell],LP_src_deriv[0,ell],out)
