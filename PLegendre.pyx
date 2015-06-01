@@ -3,8 +3,6 @@ import numpy as np
 cimport numpy as np
 cimport cython
 
-import pyshtools
-
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
@@ -16,11 +14,36 @@ cdef Pl_Pl1_Pl2(unsigned int lmax,double x):
     d2P(x)=(2l-1)/l *(2dP_{l-1}(x) + x d2P_{l-1}(x) )-(l-1)/l*d2P_{l-2}(x)
     '''
     
-    cdef unsigned int l;
-    cdef np.ndarray[np.float64_t, ndim=1] Pl,Pl1,Pl2;
+    cdef unsigned int l
+    cdef np.ndarray[np.float64_t, ndim=1] Pl,Pl1,Pl2
+    cdef double sinsq,pm1,pm2,pl
     
-    Pl,Pl1=pyshtools.PLegendre_d1(lmax,x)
+    Pl=np.zeros(lmax+1)
+    Pl1=np.zeros(lmax+1)
     Pl2=np.zeros(lmax+1)
+    
+    if (x==1):
+      for l in xrange(lmax+1):
+            Pl[l]=1.0
+            Pl1[l]=l*(l+1)/2.0
+    elif (x==-1):
+      for l in xrange(lmax+1):
+            Pl[l]=(-1)**l
+            Pl1[l]=(l*(l+1)*(-1)**(l-1))/2.0
+    else:
+      sinsq=(1.-x)*(1.+x)
+      pm2=1.0
+      Pl[0]=1.0
+      Pl1[0]=0
+      pm1=x
+      Pl[1]=pm1
+      Pl1[1]=1.0
+      for l in xrange(2,lmax+1):
+            pl = ( (2*l-1) * x * pm1 - (l-1) * pm2 ) / l
+            Pl[l] = pl
+            Pl1[l] =  l * (pm1 - x * pl) / sinsq
+            pm2  = pm1
+            pm1  = pl
     
     Pl2[0]=0
     Pl2[1]=0
