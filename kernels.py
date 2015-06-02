@@ -8,7 +8,7 @@ sin=np.sin
 cos=np.cos
 pi=np.pi
 ndiv = 960
-nproc=24*2
+nproc=24*4
 procid = int(os.environ['PBS_VNODENUM'])
 src_lat = pi / 2 
 src_lon = pi / 2 
@@ -145,7 +145,7 @@ kernel_density = np.zeros((nr,nlat,nlon),dtype=complex)
 kernel_sspeed = np.zeros((nr,nlat,nlon),dtype=complex)
 
 for omegai in xrange(procid*ndiv//nproc,((procid+1)*ndiv//nproc)):
-
+    print omegai
     kernel_densityi, kernel_sspeedi = sum_over_l_for_omega(omegai)
     
     kernel_density += kernel_densityi
