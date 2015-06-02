@@ -83,7 +83,7 @@ for omegai in xrange((procid*ndiv//nproc),((procid+1)*ndiv//nproc)):
     omega = nu [ omegai] * 2*pi
     rhoomega2 = rho*(omega**2 - N2)
     xisrc, psrc, xisrcatrcv, xisrcatsrc, psrcatrcv, xircv, prcv, xisrc_denkernel ,xisrc_sskernel, psrc_denkernel, psrc_sskernel,xircv_sskernel, prcv_sskernel =  ([] for i in range(13))
-    filename = "omega-"+str(omegai)
+    filename = "omega-"+str(omegai).zfill(4)
     
     for ell in xrange(ellmax+1):
         print ell
