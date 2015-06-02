@@ -8,7 +8,7 @@ sin=np.sin
 cos=np.cos
 pi=np.pi
 ndiv = 960
-nproc=24*4
+nproc=24*2
 procid = int(os.environ['PBS_VNODENUM'])
 src_lat = pi / 2 
 src_lon = pi / 2 
@@ -57,19 +57,23 @@ def lat_lon(nlat,nlon,lat0,lon0):
     kss_d2p_dcos = dcos_chi_dtheta**2 + dcos_chi_dphi**2
     kss_dp_dcos = -2*(term4 + term5)
     
-    return lat, lon, cosine_chi, dcos_chi_dtheta, dcos_chi_dphi, kss_d2p_dcos, kss_dp_dcos
+    return cosine_chi, dcos_chi_dtheta, dcos_chi_dphi, kss_d2p_dcos, kss_dp_dcos
 
-lat, lon, cosine_chi_src,  dcos_chi_dtheta_src, dcos_chi_dphi_src, kss_d2p_dcos_src, kss_dp_dcos_src = lat_lon( 
+cosine_chi_src,  dcos_chi_dtheta_src, dcos_chi_dphi_src, kss_d2p_dcos_src, kss_dp_dcos_src = lat_lon( 
                                                                                                     nlat,nlon,src_lat,src_lon)
 
 LP_src_deriv=np.empty((3,ellmax+1,nlat,nlon))
 PLegendre.compute_Pl_and_2_derivs_inplace(ellmax,cosine_chi_src,LP_src_deriv)
 
-lat , lon, cosine_chi_rcv, dcos_chi_dtheta_rcv, dcos_chi_dphi_rcv, kss_d2p_dcos_rcv, kss_dp_dcos_rcv = lat_lon( 
+cosine_chi_src =None
+
+cosine_chi_rcv, dcos_chi_dtheta_rcv, dcos_chi_dphi_rcv, kss_d2p_dcos_rcv, kss_dp_dcos_rcv = lat_lon( 
                                                                                                     nlat,nlon,rcv_lat,rcv_lon)
 
 LP_rcv_deriv=np.empty((3,ellmax+1,nlat,nlon))
 PLegendre.compute_Pl_and_2_derivs_inplace(ellmax,cosine_chi_rcv,LP_rcv_deriv)
+
+cosine_chi_rcv =None
 
 kss_d2p_dcos_src_3d=np.atleast_3d(kss_d2p_dcos_src).transpose(2,0,1)
 kss_dp_dcos_src_3d=np.atleast_3d(kss_dp_dcos_src).transpose(2,0,1)
@@ -92,9 +96,15 @@ kss_dp_dcos_rcv_3d=None
 
 kd_dp_dcos_src_3d = np.atleast_3d(dcos_chi_dtheta_src*dcos_chi_dtheta_rcv
                                      + dcos_chi_dphi_src * dcos_chi_dphi_rcv).transpose(2,0,1) 
+dcos_chi_dtheta_src = None
+dcos_chi_dtheta_rcv = None
+dcos_chi_dphi_src = None
+dcos_chi_dphi_rcv = None
 
 LP_src_deriv_kd=LP_src_deriv[1]*kd_dp_dcos_src_3d
 LP_rcv_deriv_kd=LP_rcv_deriv[1]
+
+kd_dp_dcos_src_3d = None
 
 out=np.empty((nr,nlat,nlon),dtype=complex)
 
@@ -117,16 +127,16 @@ def sum_over_l_for_omega(iOmega):
         norm=(2*ell+1)/(4*pi)
         
         kd_xsrc += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['xisrc_denkernel'][ell],LP_src_deriv[0,ell],out)
+                        g_data['xisrc_denkernel'][ell],LP_src_deriv[0,ell],out)*norm
         
         kd_xircv += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['xircv'][ell],LP_rcv_deriv[0,ell],out)*norm**2.
+                        g_data['xircv'][ell],LP_rcv_deriv[0,ell],out)*norm
         
         kd_psrc += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['psrc_denkernel'][ell],LP_src_deriv_kd[ell],out)
+                        g_data['psrc_denkernel'][ell],LP_src_deriv_kd[ell],out)*norm
         
         kd_prcv += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['prcv'][ell], LP_rcv_deriv_kd[ell],out)*norm**2.
+                        g_data['prcv'][ell], LP_rcv_deriv_kd[ell],out)*norm
         
         kss_src += tensorproduct.oneD_and_twoD_to_threeD(
                     g_data['xisrc_sskernel'][ell],LP_src_deriv[0,ell],out)
@@ -145,7 +155,7 @@ kernel_density = np.zeros((nr,nlat,nlon),dtype=complex)
 kernel_sspeed = np.zeros((nr,nlat,nlon),dtype=complex)
 
 for omegai in xrange(procid*ndiv//nproc,((procid+1)*ndiv//nproc)):
-    print omegai
+
     kernel_densityi, kernel_sspeedi = sum_over_l_for_omega(omegai)
     
     kernel_density += kernel_densityi
