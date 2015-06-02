@@ -126,29 +126,26 @@ def sum_over_l_for_omega(iOmega):
            
         norm=(2*ell+1)/(4*pi)
         
-        kd_xsrc += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['xisrc_denkernel'][ell],LP_src_deriv[0,ell],out)*norm
-        
-        kd_xircv += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['xircv'][ell],LP_rcv_deriv[0,ell],out)*norm
-        
-        kd_psrc += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['psrc_denkernel'][ell],LP_src_deriv_kd[ell],out)*norm
-        
-        kd_prcv += tensorproduct.oneD_and_twoD_to_threeD(
-                        g_data['prcv'][ell], LP_rcv_deriv_kd[ell],out)*norm
-        
-        kss_src += tensorproduct.oneD_and_twoD_to_threeD(
-                    g_data['xisrc_sskernel'][ell],LP_src_deriv[0,ell],out)
-        kss_rcv += tensorproduct.oneD_and_twoD_to_threeD(
-                    g_data['xircv_sskernel'][ell],LP_rcv_deriv[0,ell],out)
-        kss_src += tensorproduct.oneD_and_twoD_to_threeD(
-                    g_data['psrc_sskernel'][ell],(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),out)*norm
-        kss_rcv += tensorproduct.oneD_and_twoD_to_threeD(
-                    g_data['prcv_sskernel'][ell],(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),out)*norm
-         
-    kd_indv = kd_xisrc * kd_xircv + kd_psrc * kd_prcv
-    kss_indv =  kss_src * kss_rcv
+        tensorproduct.outer_and_add_density(
+                        xisrc_denkernel,LP_src_deriv[0,ell],kd_xisrc,
+                        xircv,LP_rcv_deriv[0,ell],kd_xircv,
+                        psrc_denkernel,LP_src_deriv_kd[ell],kd_psrc,
+                        prcv,LP_rcv_deriv_kd[ell],kd_prcv,
+                        norm
+                        )
+        tensorproduct.outer_and_add_speed(
+                        xisrc_sskernel,LP_src_deriv[0,ell],
+                        psrc_sskernel,(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_src,
+                        xircv_sskernel,LP_rcv_deriv[0,ell],
+                        prcv_sskernel,(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_rcv,
+                        norm
+                        )
+    kd_indv = np.real(kd_xisrc * kd_xircv + kd_psrc * kd_prcv)
+    kd_xisrc,kd_xircv,kd_psrc,kd_prcv=None,None,None,None
+                 
+    kss_indv = np.real(kss_src * kss_rcv)
+    kss_src,kss_rcv=None,None
+    
     return kkd_indv, kss_indv
 
 kernel_density = np.zeros((nr,nlat,nlon),dtype=complex)    
@@ -159,7 +156,8 @@ for omegai in xrange(procid*ndiv//nproc,((procid+1)*ndiv//nproc)):
     kernel_densityi, kernel_sspeedi = sum_over_l_for_omega(omegai)
     
     kernel_density += kernel_densityi
-    kernel_speed  += kernel_densityi
+    kernel_speed  += kernel_sspeedi
+    kernel_densityi,kernel_sspeedi=None,None
 
     
 fnameDensity = 'Density-omega-{:d}to{:d}'.format(procid+1,procid+21,'03')
