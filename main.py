@@ -4,8 +4,8 @@ import mi_cython as mc
 import os
 from scipy import interpolate
 
-save_path = "/scratch/jishnu/kernel/greens/"
-codedir="/home/jishnu/SoKer"
+save_path = "/scratch/samrat/kernel/greens/"
+codedir="/home/samrat/SoKer"
 
 pi = np.pi
 exp = np.exp
@@ -56,7 +56,7 @@ sigma = (sigma + 1j*damping(sigma))*diml/dimc
 dnu = derivfd(nu)
 fnu = (-1)*(nu**2)*exp(-(nu-nu0)**2 / (2*sigma**2))
 
-solar_model=os.path.join(codedir,"model_S(GONG")
+solar_model=os.path.join(codedir,"model_S(GONG)")
 r, rho,c, gravity= np.loadtxt(solar_model, unpack=True)
 #r = r[::-sampling]
 nr = np.size(r)
@@ -94,14 +94,14 @@ for omegai in xrange((procid*ndiv//nproc),((procid+1)*ndiv//nproc)):
         my_matrix = np.delete(my_matrix, [0,2*nr-1],0)
         my_matrix = np.delete(my_matrix, [0,2*nr-1],1)
         
-        my_matrix_inv = np.linalg.inv(my_matrix)
+        #my_matrix_inv = np.linalg.inv(my_matrix)
         
         src_2x = np.append(np.zeros(nr-1), src)
         src_2x = np.delete(src_2x, (2*nr-2))
         rcv_2x = np.append(np.zeros(nr-1), rcv)
         rcv_2x = np.delete(rcv_2x, (2*nr-2))
         
-        solsrc = np.dot(my_matrix_inv, src_2x)
+        solsrc = np.linalg.solve(my_matrix, src_2x)
         xis , ps = np.split(solsrc,2)
         xis = np.append(0,xis)
         ps = np.append(ps, 0)
@@ -109,7 +109,7 @@ for omegai in xrange((procid*ndiv//nproc),((procid+1)*ndiv//nproc)):
         xisrc.append( xis/sqrt(rho0))
         psrc.append( ps*sqrt(rho0))
         
-        solrcv = np.dot(my_matrix_inv, rcv_2x)
+        solrcv = np.linalg.solve(my_matrix, rcv_2x)
         xir , pr = np.split(solrcv,2)
         
         xir = np.append(0,xir)

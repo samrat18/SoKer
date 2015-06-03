@@ -1,4 +1,4 @@
-from __future__ import division
+rom __future__ import division
 import numpy as np
 import PLegendre
 import os
@@ -151,7 +151,7 @@ def sum_over_l_for_omega(iOmega):
 kernel_density = np.zeros((nr,nlat,nlon),dtype=complex)    
 kernel_sspeed = np.zeros((nr,nlat,nlon),dtype=complex)
 
-for omegai in xrange(procid*ndiv//nproc,((procid+1)*ndiv//nproc)):
+for omegai in xrange(ndiv+1):
 
     kernel_densityi, kernel_sspeedi = sum_over_l_for_omega(omegai)
     
