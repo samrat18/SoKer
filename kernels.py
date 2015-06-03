@@ -106,7 +106,7 @@ LP_rcv_deriv_kd=LP_rcv_deriv[1]
 
 kd_dp_dcos_src_3d = None
 
-out=np.empty((nr,nlat,nlon),dtype=complex)
+out=np.empty((nlat,nlon),dtype=complex)
 
 def sum_over_l_for_omega(iOmega):
        

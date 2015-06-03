@@ -23,7 +23,7 @@ rsun = 6.9598e10
 diml = rsun
 dimc = 1e6
 dimrho = 1e-3
-dimp = 1e9
+#dimp = 1e9
 width = (50e5)/rsun
 center_src = 1. -(200e5)/rsun
 center_rcv = 1. +(200e5)/rsun
@@ -56,17 +56,17 @@ sigma = (sigma + 1j*damping(sigma))*diml/dimc
 dnu = derivfd(nu)
 fnu = (-1)*(nu**2)*exp(-(nu-nu0)**2 / (2*sigma**2))
 
-solar_model=os.path.join(codedir,"JCD_modelfull")
-r, c, rho, p, Gamma_1, T= np.loadtxt(solar_model, unpack=True)
-r = r[::-sampling]
+solar_model=os.path.join(codedir,"model_S(GONG")
+r, rho,c, gravity= np.loadtxt(solar_model, unpack=True)
+#r = r[::-sampling]
 nr = np.size(r)
-c = c[::-sampling]
-rho = rho[::-sampling]/ dimrho
-p = p[::-sampling]/ dimp
+#c = c[::-sampling]
+rho = rho/ dimrho
+#p = p[::-sampling]/ dimp
 c2 = c**2 / dimc**2
 
 scaling = derivfd(r)
-gravity = (-1)*derivfd(p)/scaling/rho
+#gravity = (-1)*derivfd(p)/scaling/rho
 goverc2 = gravity/c2
 hrho = derivfd(np.log(rho))/scaling
 N2 = (-1)* gravity*( goverc2 + hrho)
