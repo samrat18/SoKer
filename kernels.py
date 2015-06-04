@@ -4,13 +4,15 @@ import PLegendre
 import os
 import tensorproduct
 import time
-t=time.time()
+
 nnode=10
 ndiv =960
 ppn=24
 nodeid = int(os.environ['PBS_NODENUM'])
 coreid = int(os.environ['PBS_VNODENUM'])
 coreid = (coreid-nodeid*ppn)
+
+print 'nodeid and coreid are ',nodeid,coreid
 
 sin=np.sin
 cos=np.cos
@@ -65,6 +67,7 @@ def lat_lon(lat0,lon0,procid):
 	
 	return cosine_chi, dcos_chi_dtheta, dcos_chi_dphi, kss_d2p_dcos, kss_dp_dcos
 
+#~ t1=time.time()
 cosine_chi_src,  dcos_chi_dtheta_src, dcos_chi_dphi_src, kss_d2p_dcos_src, kss_dp_dcos_src = lat_lon(src_lat,src_lon,coreid)
 LP_src_deriv=np.empty((3,ellmax+1,nlat,nlon//ppn))
 
@@ -107,6 +110,8 @@ LP_src_deriv_kd=LP_src_deriv[1]*kd_dp_dcos_src_3d
 LP_rcv_deriv_kd=LP_rcv_deriv[1]
 kd_dp_dcos_src_3d = None
 
+#~ print 'time taken to compute the angular dependence is ',(time.time()-t1)
+
 def sum_over_l_for_omega(iOmega):
 	   
 	kd_xisrc = np.zeros((nr,nlat,nlon//ppn),dtype=complex)
@@ -121,9 +126,8 @@ def sum_over_l_for_omega(iOmega):
 	npzfile = os.path.join(path,filename) 
 	gdata=np.load(npzfile) 
 
-	for ell in xrange(ellmax):
-		#~ print ell   
-		#~ t1=time.time()        
+	for ell in xrange(ellmax+1):
+		#~ t2=time.time()        
 		norm=(2*ell+1)/(4*pi)
 		
 		tensorproduct.outer_and_add_density(
@@ -140,7 +144,8 @@ def sum_over_l_for_omega(iOmega):
 						gdata['prcv_sskernel'][ell],(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_rcv,
 						norm
 						)
-		#~ print time.time() - t1
+		
+		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec'
 	kd_indv = np.real(kd_xisrc * kd_xircv + kd_psrc * kd_prcv)
 	kd_xisrc,kd_xircv,kd_psrc,kd_prcv=None,None,None,None
 				 
@@ -150,11 +155,11 @@ def sum_over_l_for_omega(iOmega):
 	#~ print kd_indv.shape
 	return kd_indv, kss_indv
 
-def sum_over_omega_nodewise_for_truncated_long(nodeid):
+def sum_over_omega_nodewise_for_truncated_long(node_number):
 	kernel_density_lonwise = np.zeros((nr,nlat,nlon//ppn),dtype=float)
 	kernel_sspeed_lonwise = np.zeros((nr,nlat,nlon//ppn),dtype=float)
 
-	for omegai in xrange(nodeid*ndiv//nnode,(nodeid+1)*ndiv//nnode):
+	for omegai in xrange(node_number*ndiv//nnode,(node_number+1)*ndiv//nnode):
 
 		kernel_density_lonwise_omegai, kernel_sspeed_lonwise_omegai = sum_over_l_for_omega(omegai)
 		
@@ -162,20 +167,23 @@ def sum_over_omega_nodewise_for_truncated_long(nodeid):
 		kernel_sspeed_lonwise += kernel_sspeed_lonwise_omegai
 		
 		kernel_density_lonwise_omegai,kernel_sspeed_lonwise_omegai=None,None
+	return kernel_density_lonwise, kernel_sspeed_lonwise
 
 #~ print kernel_density_lon_lat.shape, kernel_sspeed_lon_lat.shape
 #~ print kernel_sspeed_lon_lat.nbytes/1e6 ,'Mb'
 #~ print kernel_density_lon_lat.nbytes/1e6 ,'Mb'
 #~ return kernel_density_lon,kernel_sspeed_lon
-    
+#~ t3=time.time()    
 filename_Density = 'Density-nodeid-{:d}-procid-{:d}'.format(coreid,nodeid)
 kDensityfile = os.path.join( directory_kD, filename_Density)
 filename_SoundSpeed = 'SoundSpeed-nodeid-{:d}-procid-{:d}'.format(coreid,nodeid)
 kSoundSpeedfile = os.path.join( directory_kSS, filename_SoundSpeed)
 
-density_kernel,sspeed_kernel=sum_over_omega_for_lon(nodeid)
+density_kernel,sspeed_kernel=sum_over_omega_nodewise_for_truncated_long(nodeid)
+#~ print 'shapes of density and sound speed kernels are ', density_kernel.shape, sspeed_kernel.shape
+#~ print 'sizes of density and sound speed kernels are ', density_kernel.nbytes/1e9,'GB	',sspeed_kernel.nbytes/1e9,'GB'
 np.savez(kDensityfile,density_kernel=density_kernel)
 np.savez(kSoundSpeedfile,sspeed_kernel=sspeed_kernel)
 
 
-print (time.time()-t)
+#~ print 'total time taken for one omega is ',(time.time()-t3),'sec'
