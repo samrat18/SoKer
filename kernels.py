@@ -11,6 +11,7 @@ ppn=24
 nodeid = int(os.environ['PBS_NODENUM'])
 coreid = int(os.environ['PBS_VNODENUM'])
 coreid = (coreid-nodeid*ppn)
+omega_per_node=ndiv//nnode
 
 print 'nodeid and coreid are ',nodeid,coreid
 
@@ -18,9 +19,9 @@ sin=np.sin
 cos=np.cos
 pi=np.pi
 
-nlat = 480    
+nlat = 288    
 nlon = 2 * nlat
-ellmax = 450
+ellmax = 256
 
 src_lat = pi / 2 
 src_lon = pi / 2 
@@ -29,11 +30,11 @@ rcv_lon = pi / 4
 
 path = '/scratch/samrat/kernel/greens/'
 
-directory_kSS = '/scratch/samrat/kernel/greens/sound_speed_individual/'
+directory_kSS = '/scratch/samrat/kernel/greens/sound_speed_individual_256_ells/'
 if not os.path.exists(directory_kSS):
     os.makedirs(directory_kSS)
 
-directory_kD = '/scratch/samrat/kernel/greens/density_individual/'
+directory_kD = '/scratch/samrat/kernel/greens/density_individual_256_ells/'
 if not os.path.exists(directory_kD):
     os.makedirs(directory_kD)
 
@@ -125,7 +126,7 @@ def sum_over_l_for_omega(iOmega):
 	filename = 'omega-'+str(iOmega).zfill(4)+'.npz'
 	npzfile = os.path.join(path,filename) 
 	gdata=np.load(npzfile) 
-
+	t2=time.time() 
 	for ell in xrange(ellmax+1):
 		#~ t2=time.time()        
 		norm=(2*ell+1)/(4*pi)
@@ -145,7 +146,8 @@ def sum_over_l_for_omega(iOmega):
 						norm
 						)
 		
-		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec'
+		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid
+	print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
 	kd_indv = np.real(kd_xisrc * kd_xircv + kd_psrc * kd_prcv)
 	kd_xisrc,kd_xircv,kd_psrc,kd_prcv=None,None,None,None
 				 
@@ -155,11 +157,12 @@ def sum_over_l_for_omega(iOmega):
 	#~ print kd_indv.shape
 	return kd_indv, kss_indv
 
-def sum_over_omega_nodewise_for_truncated_long(node_number):
+def sum_over_omega_nodewise_for_truncated_long(node_number,procid):
 	kernel_density_lonwise = np.zeros((nr,nlat,nlon//ppn),dtype=float)
 	kernel_sspeed_lonwise = np.zeros((nr,nlat,nlon//ppn),dtype=float)
-
-	for omegai in xrange(node_number*ndiv//nnode,(node_number+1)*ndiv//nnode):
+	omega_list_on_present_node=xrange(node_number*ndiv//nnode,(node_number+1)*ndiv//nnode)
+	omgea_list_on_present_node_for_present_proc=np.roll(omega_list_on_present_node,-procid*omega_per_node//ppn)
+	for omegai in omgea_list_on_present_node_for_present_proc:
 
 		kernel_density_lonwise_omegai, kernel_sspeed_lonwise_omegai = sum_over_l_for_omega(omegai)
 		
@@ -174,12 +177,12 @@ def sum_over_omega_nodewise_for_truncated_long(node_number):
 #~ print kernel_density_lon_lat.nbytes/1e6 ,'Mb'
 #~ return kernel_density_lon,kernel_sspeed_lon
 #~ t3=time.time()    
-filename_Density = 'Density-nodeid-{:d}-procid-{:d}'.format(coreid,nodeid)
+filename_Density = 'Density-nodeid-{:d}-procid-{:d}'.format(nodeid,coreid)
 kDensityfile = os.path.join( directory_kD, filename_Density)
-filename_SoundSpeed = 'SoundSpeed-nodeid-{:d}-procid-{:d}'.format(coreid,nodeid)
+filename_SoundSpeed = 'SoundSpeed-nodeid-{:d}-procid-{:d}'.format(nodeid,coreid)
 kSoundSpeedfile = os.path.join( directory_kSS, filename_SoundSpeed)
 
-density_kernel,sspeed_kernel=sum_over_omega_nodewise_for_truncated_long(nodeid)
+density_kernel,sspeed_kernel=sum_over_omega_nodewise_for_truncated_long(nodeid,coreid)
 #~ print 'shapes of density and sound speed kernels are ', density_kernel.shape, sspeed_kernel.shape
 #~ print 'sizes of density and sound speed kernels are ', density_kernel.nbytes/1e9,'GB	',sspeed_kernel.nbytes/1e9,'GB'
 np.savez(kDensityfile,density_kernel=density_kernel)
