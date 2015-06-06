@@ -4,7 +4,9 @@ import mi_cython as mc
 import os
 from scipy import interpolate
 
-save_path = "/scratch/samrat/kernel/greens/"
+save_path = "/scratch/samrat/kernel/greens_June_6_3xDamping/"
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 codedir="/home/samrat/SoKer"
 
 pi = np.pi
@@ -14,7 +16,7 @@ sqrt = np.sqrt
 nproc=24*10
 procid = int(os.environ['PBS_VNODENUM'])
 
-ellmax = 500
+ellmax = 128
 numax = 4.5
 numin = 1.5
 ndiv = 960
@@ -39,14 +41,14 @@ nu = np.linspace( numin, numax, ndiv) * 1e-3
 
 dampingfile=os.path.join(codedir,"m585q.4816")
 dmpnu = np.loadtxt(dampingfile,usecols= [2])*1e-6
-fwhm = np.loadtxt(dampingfile,usecols= [4])*1e-6
+fwhm = 3.0*np.loadtxt(dampingfile,usecols= [4])*1e-6 #increasing the damping to avoid resolution problem
 
 # Sort the damping array before interpolating onto our grid
 points = zip(dmpnu, fwhm)
 points = sorted(points, key=lambda point: point[0])
 dmpnu, fwhm = zip(*points)
 
-damping = interpolate.interp1d(dmpnu, fwhm)
+damping = interpolate.interp1d(dmpnu, fwhm) #increasing the damping to avoid resolution problem
 nu = (nu + 1j*damping(nu))*(diml/dimc)
 
 nu0 = 3e-3
@@ -58,12 +60,13 @@ fnu = (-1)*(nu**2)*exp(-(nu-nu0)**2 / (2*sigma**2))
 
 solar_model=os.path.join(codedir,"model_S(GONG)")
 r, rho,c, gravity= np.loadtxt(solar_model, unpack=True)
-#r = r[::-sampling]
+r = r[::sampling]
 nr = np.size(r)
-#c = c[::-sampling]
+c = c[::sampling]
 rho = rho/ dimrho
-#p = p[::-sampling]/ dimp
 c2 = c**2 / dimc**2
+gravity=gravity[::sampling]
+rho=rho[::sampling]
 
 scaling = derivfd(r)
 #gravity = (-1)*derivfd(p)/scaling/rho
@@ -86,7 +89,7 @@ for omegai in xrange((procid*ndiv//nproc),((procid+1)*ndiv//nproc)):
     filename = "omega-"+str(omegai).zfill(4)
     
     for ell in xrange(ellmax+1):
-        print ell
+        #print ell
         sl2 = ell*(ell+1)*c2/r**2
         oneoverrhoc2 = (sl2 /omega**2 -1)/ (rho*c2)
         
@@ -96,20 +99,26 @@ for omegai in xrange((procid*ndiv//nproc),((procid+1)*ndiv//nproc)):
         
         #my_matrix_inv = np.linalg.inv(my_matrix)
         
+        #print "Size of my matrix",my_matrix.shape
+        
         src_2x = np.append(np.zeros(nr-1), src)
         src_2x = np.delete(src_2x, (2*nr-2))
         rcv_2x = np.append(np.zeros(nr-1), rcv)
         rcv_2x = np.delete(rcv_2x, (2*nr-2))
-        
+        #print "Starting to solve for source"
         solsrc = np.linalg.solve(my_matrix, src_2x)
+        #solsrc = np.linalg.inv(my_matrix).dot(src_2x)
+        #print "Solved for source"
         xis , ps = np.split(solsrc,2)
         xis = np.append(0,xis)
         ps = np.append(ps, 0)
         
         xisrc.append( xis/sqrt(rho0))
         psrc.append( ps*sqrt(rho0))
-        
+        #print "Starting to solve for receiver"
         solrcv = np.linalg.solve(my_matrix, rcv_2x)
+        #solrcv = np.linalg.inv(my_matrix).dot(rcv_2x)
+        #print "Solved for receiver"
         xir , pr = np.split(solrcv,2)
         
         xir = np.append(0,xir)

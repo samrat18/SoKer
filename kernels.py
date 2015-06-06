@@ -145,7 +145,6 @@ def sum_over_l_for_omega(iOmega):
 						gdata['prcv_sskernel'][ell],(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_rcv,
 						norm
 						)
-		
 		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid
 	print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
 	kd_indv = np.real(kd_xisrc * kd_xircv + kd_psrc * kd_prcv)
