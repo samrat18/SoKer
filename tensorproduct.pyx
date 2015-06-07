@@ -68,6 +68,6 @@ cpdef outer_and_add_speed(np.complex128_t [:] fr1,
         fr4i=fr4[i]
         for j in xrange(Ntheta):
             for k in xrange(Nphi):
-                result1[i,j,k]=result1[i,j,k] +(fr1i*(fthetaphi1[j,k]*norm) +fr2i*(fthetaphi2[j,k]*norm))
-                result2[i,j,k]=result2[i,j,k]+(fr3i*(fthetaphi3[j,k]*norm)  +fr4i*(fthetaphi4[j,k]*norm))
+                result1[i,j,k]=result1[i,j,k] +(fr1i*fthetaphi1[j,k]  +fr2i*fthetaphi2[j,k])*norm
+                result2[i,j,k]=result2[i,j,k] +(fr3i*fthetaphi3[j,k]  +fr4i*fthetaphi4[j,k])*norm
 

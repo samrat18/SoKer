@@ -32,7 +32,7 @@ cdef Pl_Pl1_Pl2(unsigned int lmax,double x):
 		Pl[0]=1.0
 		Pl[1]=x
 		for  l in xrange(2,lmax+1):
-			Pl[l]=((2*l-1)*x*Pl[l-1]-(l-1)*Pl[l-2])/l
+			Pl[l]=((2*l-1.0)*x*Pl[l-1]-(l-1.0)*Pl[l-2.0])/l
 	#~     if (x==1):
 	#~       for l in xrange(lmax+1):
 	#~             Pl[l]=1.0
@@ -61,12 +61,11 @@ cdef Pl_Pl1_Pl2(unsigned int lmax,double x):
 	Pl2[1]=0.0
 
 	for l in xrange(2,lmax+1):
-		Pl1[l]=(2*l-1)/l * (Pl[l-1]+x*Pl1[l-1]
-				-(l-1)*Pl1[l-2])
+		Pl1[l]=1/l *( (2*l-1.)*( Pl[l-1]+x*Pl1[l-1] )
+													-(l-1.)*Pl1[l-2] )
 
-		Pl2[l]=((2*l-1)/l * (2*Pl1[l-1]+x*Pl2[l-1])
-				-(l-1)/l * Pl2[l-2])
-				
+		Pl2[l]=1/l *( (2*l-1.)*( 2.*Pl1[l-1]+x*Pl2[l-1])
+													-(l-1.)*Pl2[l-2] )
 	return Pl,Pl1,Pl2
 
 

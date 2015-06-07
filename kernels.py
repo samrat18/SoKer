@@ -4,6 +4,7 @@ import PLegendre
 import os
 import tensorproduct
 import time
+import errno
 
 nnode=10
 ndiv =960
@@ -13,31 +14,40 @@ coreid = int(os.environ['PBS_VNODENUM'])
 coreid = (coreid-nodeid*ppn)
 omega_per_node=ndiv//nnode
 
-print 'nodeid and coreid are ',nodeid,coreid
+#print 'nodeid and coreid are ',nodeid,coreid
 
 sin=np.sin
 cos=np.cos
 pi=np.pi
 
-nlat = 288    
+ellmax=128
+nlat = (ellmax+ppn)-ellmax%ppn    
 nlon = 2 * nlat
-ellmax = 256
 
 src_lat = pi / 2 
-src_lon = pi / 2 
+src_lon = pi / 6 
 rcv_lat = pi / 2 
 rcv_lon = pi / 4 
 
-path = '/scratch/samrat/kernel/greens/'
+path = '/scratch/samrat/kernel/greens_7-06-15_10Xdamping/'
 
-directory_kSS = '/scratch/samrat/kernel/greens/sound_speed_individual_256_ells/'
-if not os.path.exists(directory_kSS):
-    os.makedirs(directory_kSS)
+directory_kSS = '/scratch/samrat/kernel/sound_speed_longitudal_blocks_128_ells/'
+if not os.path.isdir(directory_kSS):
+    try:
+        os.makedirs(directory_kSS)
+    except OSError, e:
+        if e.errno != errno.EEXIST:
+            raise e
+        pass
 
-directory_kD = '/scratch/samrat/kernel/greens/density_individual_256_ells/'
-if not os.path.exists(directory_kD):
-    os.makedirs(directory_kD)
-
+directory_kD = '/scratch/samrat/kernel/density_longitudal_blocks_128_ells/'
+if not os.path.isdir(directory_kD):
+    try:
+        os.makedirs(directory_kD)
+    except OSError, e:
+        if e.errno != errno.EEXIST:
+            raise e
+        pass
 nr = len(np.load(os.path.join(path,'omega-0100.npz'))['r'])
 latfull = np.atleast_2d(np.linspace (0, pi,   nlat)).T
 lonfull = np.atleast_2d(np.linspace (0, 2*pi, nlon))
@@ -126,10 +136,10 @@ def sum_over_l_for_omega(iOmega):
 	filename = 'omega-'+str(iOmega).zfill(4)+'.npz'
 	npzfile = os.path.join(path,filename) 
 	gdata=np.load(npzfile) 
-	t2=time.time() 
+	#~ t2=time.time() 
 	for ell in xrange(ellmax+1):
 		#~ t2=time.time()        
-		norm=(2*ell+1)/(4*pi)
+		norm=(2.*ell+1.0)/(4*pi)
 		
 		tensorproduct.outer_and_add_density(
 						gdata['xisrc_denkernel'][ell],LP_src_deriv[0,ell],kd_xisrc,
@@ -146,7 +156,7 @@ def sum_over_l_for_omega(iOmega):
 						norm
 						)
 		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid
-	print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
+	#~ print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
 	kd_indv = np.real(kd_xisrc * kd_xircv + kd_psrc * kd_prcv)
 	kd_xisrc,kd_xircv,kd_psrc,kd_prcv=None,None,None,None
 				 

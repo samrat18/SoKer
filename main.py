@@ -3,10 +3,16 @@ import numpy as np
 import mi_cython as mc
 import os
 from scipy import interpolate
+import errno
 
-save_path = "/scratch/samrat/kernel/greens_June_6_3xDamping/"
-if not os.path.exists(save_path):
-    os.makedirs(save_path)
+save_path = "/scratch/samrat/kernel/greens_7-06-15_10Xdamping"
+if not os.path.isdir(save_path):
+	try:
+		os.makedirs(save_path)
+	except OSError, e:
+		if e.errno != errno.EEXIST:
+			raise e
+		pass
 codedir="/home/samrat/SoKer"
 
 pi = np.pi
@@ -41,7 +47,7 @@ nu = np.linspace( numin, numax, ndiv) * 1e-3
 
 dampingfile=os.path.join(codedir,"m585q.4816")
 dmpnu = np.loadtxt(dampingfile,usecols= [2])*1e-6
-fwhm = 3.0*np.loadtxt(dampingfile,usecols= [4])*1e-6 #increasing the damping to avoid resolution problem
+fwhm = np.loadtxt(dampingfile,usecols= [4])*1e-6 *1e1 
 
 # Sort the damping array before interpolating onto our grid
 points = zip(dmpnu, fwhm)
