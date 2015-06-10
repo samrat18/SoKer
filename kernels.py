@@ -5,33 +5,34 @@ import os
 import tensorproduct
 import time
 import errno
+import pandas as pd
+from time import gmtime, strftime
 
-nnode=10
-ndiv =960
-ppn=24
-nodeid = int(os.environ['PBS_NODENUM'])
-coreid = int(os.environ['PBS_VNODENUM'])
-coreid = (coreid-nodeid*ppn)
-omega_per_node=ndiv//nnode
-
-#print 'nodeid and coreid are ',nodeid,coreid
-
-sin=np.sin
-cos=np.cos
-pi=np.pi
-
-ellmax=128
+readme=pd.read_csv('/home/samrat/temp',sep='\t',header=None)
+path=readme.iat[0,0]
+numin=readme.iat[0,1]
+numax=readme.iat[0,2]
+ndiv=int(readme.iat[0,3])
+ellmax=int(readme.iat[0,4])
+nnode=15
+ppn=240//nnode
 nlat = (ellmax+ppn)-ellmax%ppn    
 nlon = 2 * nlat
 
-src_lat = pi / 2 
-src_lon = pi / 6 
-rcv_lat = pi / 2 
-rcv_lon = pi / 4 
+nodeid = int(os.environ['PBS_NODENUM'])
+coreid = int(os.environ['PBS_VNODENUM'])
+coreid = (coreid-nodeid*ppn)   #check
+omega_per_node=ndiv//nnode
+#print 'nodeid and coreid are ',nodeid,coreid
+sin=np.sin
+cos=np.cos
+pi=np.pi
+src_lat = pi/2 
+src_lon = pi/5.5  
+rcv_lat = pi/2 
+rcv_lon = pi/3.5 
 
-path = '/scratch/samrat/kernel/greens_7-06-15_10Xdamping/'
-
-directory_kSS = '/scratch/samrat/kernel/sound_speed_longitudal_blocks_128_ells/'
+directory_kSS = '/scratch/samrat/kernel/'+strftime("%Y-%m-%d", gmtime())+'|kss|ell-'+str(ellmax)+'src_lon_pi/5.5_rcv_lon_pi/3.5'+'-frequency-'+str(numin)+'mHzto'+str(numax)+'mHz-divisions-'+str(ndiv)
 if not os.path.isdir(directory_kSS):
     try:
         os.makedirs(directory_kSS)
@@ -40,7 +41,7 @@ if not os.path.isdir(directory_kSS):
             raise e
         pass
 
-directory_kD = '/scratch/samrat/kernel/density_longitudal_blocks_128_ells/'
+directory_kD = '/scratch/samrat/kernel/'+strftime("%Y-%m-%d", gmtime())+'|kd|ell-'+str(ellmax)+'src_lon_pi/5.5_rcv_lon_pi/3.5'+'-frequency-'+str(numin)+'mHzto'+str(numax)+'mHz-divisions-'+str(ndiv)
 if not os.path.isdir(directory_kD):
     try:
         os.makedirs(directory_kD)
@@ -49,6 +50,7 @@ if not os.path.isdir(directory_kD):
             raise e
         pass
 nr = len(np.load(os.path.join(path,'omega-0100.npz'))['r'])
+print nr, nlat, nlon
 latfull = np.atleast_2d(np.linspace (0, pi,   nlat)).T
 lonfull = np.atleast_2d(np.linspace (0, 2*pi, nlon))
 
@@ -110,8 +112,7 @@ kss_d2p_dcos_rcv_3d=None
 kss_dp_dcos_rcv_3d=None
 
 
-kd_dp_dcos_src_3d = np.atleast_3d(dcos_chi_dtheta_src*dcos_chi_dtheta_rcv
-																		+ dcos_chi_dphi_src * dcos_chi_dphi_rcv).transpose(2,0,1) 
+kd_dp_dcos_src_3d = np.atleast_3d(dcos_chi_dtheta_src*dcos_chi_dtheta_rcv+ dcos_chi_dphi_src * dcos_chi_dphi_rcv).transpose(2,0,1) 
 dcos_chi_dtheta_src = None
 dcos_chi_dtheta_rcv = None
 dcos_chi_dphi_src = None
@@ -125,42 +126,38 @@ kd_dp_dcos_src_3d = None
 
 def sum_over_l_for_omega(iOmega):
 	   
-	kd_xisrc = np.zeros((nr,nlat,nlon//ppn),dtype=complex)
-	kd_xircv = np.zeros((nr,nlat,nlon//ppn),dtype=complex)
-	kd_psrc = np.zeros((nr,nlat,nlon//ppn),dtype=complex)
-	kd_prcv = np.zeros((nr,nlat,nlon//ppn),dtype=complex)
-
-	kss_src = np.zeros((nr,nlat,nlon//ppn),dtype=complex)
-	kss_rcv = np.zeros((nr,nlat,nlon//ppn),dtype=complex)
+	kd_xisrc,kd_xircv,kd_psrc,kd_prcv,kss_src,kss_rcv = (np.zeros((nr,nlat,nlon//ppn),dtype=float) for i in range(6))
 
 	filename = 'omega-'+str(iOmega).zfill(4)+'.npz'
 	npzfile = os.path.join(path,filename) 
-	gdata=np.load(npzfile) 
+	gdata=np.load(npzfile)
+	gdata=gdata 
+	
 	#~ t2=time.time() 
 	for ell in xrange(ellmax+1):
 		#~ t2=time.time()        
 		norm=(2.*ell+1.0)/(4*pi)
 		
 		tensorproduct.outer_and_add_density(
-						gdata['xisrc_denkernel'][ell],LP_src_deriv[0,ell],kd_xisrc,
-						gdata['xircv'][ell],LP_rcv_deriv[0,ell],kd_xircv,
-						gdata['psrc_denkernel'][ell],LP_src_deriv_kd[ell],kd_psrc,
-						gdata['prcv'][ell],LP_rcv_deriv_kd[ell],kd_prcv,
+						gdata['xisrc_denkernel'][ell].real,LP_src_deriv[0,ell],kd_xisrc,
+						gdata['xircv'][ell].real,LP_rcv_deriv[0,ell],kd_xircv,
+						gdata['psrc_denkernel'][ell].real,LP_src_deriv_kd[ell],kd_psrc,
+						gdata['prcv'][ell].real,LP_rcv_deriv_kd[ell],kd_prcv,
 						norm
 						)
 		tensorproduct.outer_and_add_speed(
-						gdata['xisrc_sskernel'][ell],LP_src_deriv[0,ell],
-						gdata['psrc_sskernel'][ell],(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_src,
-						gdata['xircv_sskernel'][ell],LP_rcv_deriv[0,ell],
-						gdata['prcv_sskernel'][ell],(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_rcv,
+						gdata['xisrc_sskernel'][ell].real,LP_src_deriv[0,ell],
+						gdata['psrc_sskernel'][ell].real,(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_src,
+						gdata['xircv_sskernel'][ell].real,LP_rcv_deriv[0,ell],
+						gdata['prcv_sskernel'][ell].real,(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_rcv,
 						norm
 						)
 		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid
 	#~ print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
-	kd_indv = np.real(kd_xisrc * kd_xircv + kd_psrc * kd_prcv)
+	kd_indv = kd_xisrc * kd_xircv + kd_psrc * kd_prcv
 	kd_xisrc,kd_xircv,kd_psrc,kd_prcv=None,None,None,None
 				 
-	kss_indv=np.real(kss_src * kss_rcv)
+	kss_indv=kss_src * kss_rcv
 	kss_src,kss_rcv=None,None
 
 	#~ print kd_indv.shape
@@ -169,9 +166,9 @@ def sum_over_l_for_omega(iOmega):
 def sum_over_omega_nodewise_for_truncated_long(node_number,procid):
 	kernel_density_lonwise = np.zeros((nr,nlat,nlon//ppn),dtype=float)
 	kernel_sspeed_lonwise = np.zeros((nr,nlat,nlon//ppn),dtype=float)
-	omega_list_on_present_node=xrange(node_number*ndiv//nnode,(node_number+1)*ndiv//nnode)
-	omgea_list_on_present_node_for_present_proc=np.roll(omega_list_on_present_node,-procid*omega_per_node//ppn)
-	for omegai in omgea_list_on_present_node_for_present_proc:
+	omega_list_on_present_node=np.arange(node_number,ndiv,ndiv//nnode)
+	#omega_list_on_present_node_for_present_proc=np.roll(omega_list_on_present_node,-procid*omega_per_node//ppn)
+	for omegai in omega_list_on_present_node:
 
 		kernel_density_lonwise_omegai, kernel_sspeed_lonwise_omegai = sum_over_l_for_omega(omegai)
 		
