@@ -16,8 +16,14 @@ extensions=[
             extra_compile_args=["-w"]
             ),
     Extension("mi_cython",
-            ["mi_cython.pyx"]
-            )
+            ["mi_cython.pyx"],
+            include_dirs=[numpy.get_include()]
+            ),
+    Extension("power_spectrum",
+			["power_spectrum.pyx"],
+			include_dirs=[numpy.get_include()],
+			extra_compile_args=["-w"]
+			)
 ]
 
 setup(
