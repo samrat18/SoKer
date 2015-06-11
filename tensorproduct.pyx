@@ -6,22 +6,22 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef outer_and_add_density(np.complex128_t [:] fr1,
+cpdef outer_and_add_density(np.float64_t [:] fr1,
                             np.float64_t [:,::1] fthetaphi1,
-                            np.complex128_t [:,:,::1] result1,
-                            np.complex128_t [:] fr2,
+                            np.float64_t [:,:,::1] result1,
+                            np.float64_t [:] fr2,
                             np.float64_t [:,::1] fthetaphi2,
-                            np.complex128_t [:,:,::1] result2,
-                            np.complex128_t [:] fr3,
+                            np.float64_t [:,:,::1] result2,
+                            np.float64_t [:] fr3,
                             np.float64_t [:,::1] fthetaphi3,
-                            np.complex128_t [:,:,::1] result3,
-                            np.complex128_t [:] fr4,
+                            np.float64_t [:,:,::1] result3,
+                            np.float64_t [:] fr4,
                             np.float64_t [:,::1] fthetaphi4,
-                            np.complex128_t [:,:,::1] result4,
+                            np.float64_t [:,:,::1] result4,
                             double norm):
     
     cdef unsigned int i,j,k,Nr,Ntheta,Nphi
-    cdef double complex fr1i,fr2i,fr3i,fr4i
+    cdef double fr1i,fr2i,fr3i,fr4i
     
     Nr=fr1.shape[0]
     Ntheta=fthetaphi1.shape[0]
@@ -34,28 +34,28 @@ cpdef outer_and_add_density(np.complex128_t [:] fr1,
         fr4i=fr4[i]
         for j in xrange(Ntheta):
             for k in xrange(Nphi):
-                result1[i,j,k]=result1[i,j,k]+fr1i*(fthetaphi1[j,k]*norm)
-                result2[i,j,k]=result2[i,j,k]+fr2i*(fthetaphi2[j,k]*norm)
-                result3[i,j,k]=result3[i,j,k]+fr3i*(fthetaphi3[j,k]*norm)
-                result4[i,j,k]=result4[i,j,k]+fr4i*(fthetaphi4[j,k]*norm)
+                result1[i,j,k]=result1[i,j,k]+(fr1i*norm)*fthetaphi1[j,k]
+                result2[i,j,k]=result2[i,j,k]+(fr2i*norm)*fthetaphi2[j,k]
+                result3[i,j,k]=result3[i,j,k]+(fr3i*norm)*fthetaphi3[j,k]
+                result4[i,j,k]=result4[i,j,k]+(fr4i*norm)*fthetaphi4[j,k]
 
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef outer_and_add_speed(np.complex128_t [:] fr1,
+cpdef outer_and_add_speed(np.float64_t [:] fr1,
                             np.float64_t [:,::1] fthetaphi1,
-                            np.complex128_t [:] fr2,
+                            np.float64_t [:] fr2,
                             np.float64_t [:,::1] fthetaphi2,
-                            np.complex128_t [:,:,::1] result1,
-                            np.complex128_t [:] fr3,
+                            np.float64_t [:,:,::1] result1,
+                            np.float64_t [:] fr3,
                             np.float64_t [:,::1] fthetaphi3,
-                            np.complex128_t [:] fr4,
+                            np.float64_t [:] fr4,
                             np.float64_t [:,::1] fthetaphi4,
-                            np.complex128_t [:,:,::1] result2,
+                            np.float64_t [:,:,::1] result2,
                             double norm):
     
     cdef unsigned int i,j,k,Nr,Ntheta,Nphi
-    cdef double complex fr1i,fr2i,fr3i,fr4i
+    cdef double fr1i,fr2i,fr3i,fr4i
     
     Nr=fr1.shape[0]
     Ntheta=fthetaphi1.shape[0]
@@ -68,6 +68,5 @@ cpdef outer_and_add_speed(np.complex128_t [:] fr1,
         fr4i=fr4[i]
         for j in xrange(Ntheta):
             for k in xrange(Nphi):
-                result1[i,j,k]=result1[i,j,k] +(fr1i*fthetaphi1[j,k]  +fr2i*fthetaphi2[j,k])*norm
-                result2[i,j,k]=result2[i,j,k] +(fr3i*fthetaphi3[j,k]  +fr4i*fthetaphi4[j,k])*norm
-
+                result1[i,j,k]=result1[i,j,k] +((fr1i*norm)*fthetaphi1[j,k]  +(fr2i*norm)*fthetaphi2[j,k])
+                result2[i,j,k]=result2[i,j,k] +((fr3i*norm)*fthetaphi3[j,k]  +(fr4i*norm)*fthetaphi4[j,k])

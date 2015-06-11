@@ -5,8 +5,8 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-@cython.cdivision(True)
-cdef Pl_Pl1_Pl2(unsigned int lmax,double x):
+#@cython.cdivision(True)
+cpdef Pl_Pl1_Pl2(unsigned int lmax,double x):
 
 	'''
 	Computes Pl and dPl using shtools' PLegendre_d1
@@ -61,18 +61,16 @@ cdef Pl_Pl1_Pl2(unsigned int lmax,double x):
 	Pl2[1]=0.0
 
 	for l in xrange(2,lmax+1):
-		Pl1[l]=1/l *( (2*l-1.)*( Pl[l-1]+x*Pl1[l-1] )
-													-(l-1.)*Pl1[l-2] )
+		Pl1[l]=1/l *( (2*l-1.)*( Pl[l-1]+x*Pl1[l-1] )-(l-1.)*Pl1[l-2] )
+		Pl2[l]=1/l *( (2*l-1.)*( 2.*Pl1[l-1]+x*Pl2[l-1])-(l-1.)*Pl2[l-2] )
 
-		Pl2[l]=1/l *( (2*l-1.)*( 2.*Pl1[l-1]+x*Pl2[l-1])
-													-(l-1.)*Pl2[l-2] )
 	return Pl,Pl1,Pl2
 
 
       
 @cython.boundscheck(False)
 @cython.wraparound(False)
-@cython.cdivision(True)
+#@cython.cdivision(True)
 cpdef compute_Pl_and_2_derivs_inplace(unsigned int lmax,np.ndarray[np.float64_t,ndim=2] x_array,
                                         np.ndarray[np.float64_t,ndim=4] LP):
 	'''Computes Pl, dPl and d2Pl for each element in x_array, for l=0 to lmax.

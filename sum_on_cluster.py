@@ -4,12 +4,12 @@ import os
 import time
 t=time.time()
 
-directory_kSS = '/scratch/samrat/kernel/sound_speed_longitudal_blocks_128_ells/'
-directory_kD = '/scratch/samrat/kernel/density_longitudal_blocks_128_ells/'
-nnode=10
-ppn=24
-nr=798
-nlat=144
+directory_kSS = '/scratch/samrat/kernel/2015-06-10|kss|ell-480src_lon_pi/5.5_rcv_lon_pi/3.5-frequency-0.5mHzto5.5mHz-divisions-1000/'
+directory_kD = '/scratch/samrat/kernel/2015-06-10|kd|ell-480src_lon_pi/5.5_rcv_lon_pi/3.5-frequency-0.5mHzto5.5mHz-divisions-1000/'
+nnode=15
+ppn=16
+nr=133
+nlat=496
 nlon=2*nlat
 k_density=np.zeros((nr,nlat,1),dtype=float)
 k_soundspeed=np.zeros((nr,nlat,1),dtype=float)
