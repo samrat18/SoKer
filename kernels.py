@@ -8,7 +8,11 @@ import errno
 import pandas as pd
 from time import gmtime, strftime
 
+<<<<<<< HEAD
 readme=pd.read_csv(os.getcwd()+'/SoKer/temp',sep='\t',header=None)
+=======
+readme=pd.read_csv('/home/samrat/temp',sep='\t',header=None)
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 path=readme.iat[0,0]
 numin=readme.iat[0,1]
 numax=readme.iat[0,2]
@@ -72,8 +76,13 @@ def lat_lon(lat0,lon0,procid):
 	term4 = sin(lat0)*sin(lat)*cos(lon-lon0)
 	term5 = cos(lat0)*cos(lat)
 
+<<<<<<< HEAD
 	dcos_chi_dtheta =term2-term1
 	dcos_chi_dphi= -term3
+=======
+	dcos_chi_dtheta = term1 - term2
+	dcos_chi_dphi= term3
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 
 	kss_d2p_dcos = dcos_chi_dtheta**2 + dcos_chi_dphi**2
 	kss_dp_dcos = -2*(term4 + term5)
@@ -87,10 +96,13 @@ LP_src_deriv=np.empty((3,ellmax+1,nlat,nlon//ppn))
 PLegendre.compute_Pl_and_2_derivs_inplace(ellmax,cosine_chi_src,LP_src_deriv)
 cosine_chi_src =None
 
+<<<<<<< HEAD
 
 
 dcos_chi_dphi_src_3d=np.atleast_3d(dcos_chi_dphi_src).transpose(2,0,1)
 kd_term3_Gphir=LP_src_deriv[1]*dcos_chi_dphi_src_3d
+=======
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 kss_d2p_dcos_src_3d=np.atleast_3d(kss_d2p_dcos_src).transpose(2,0,1)
 kss_dp_dcos_src_3d=np.atleast_3d(kss_dp_dcos_src).transpose(2,0,1)
 kss_d2p_dcos_src, kss_dp_dcos_src= None,None
@@ -134,7 +146,12 @@ def sum_over_l_for_omega(iOmega):
 
 	filename = 'omega-'+str(iOmega).zfill(4)+'.npz'
 	npzfile = os.path.join(path,filename) 
+<<<<<<< HEAD
 	gdata=np.load(npzfile) 
+=======
+	gdata=np.load(npzfile)
+	gdata=gdata 
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 	
 	#~ t2=time.time() 
 	for ell in xrange(ellmax+1):
@@ -142,6 +159,7 @@ def sum_over_l_for_omega(iOmega):
 		norm=(2.*ell+1.0)/(4*pi)
 		
 		tensorproduct.outer_and_add_density(
+<<<<<<< HEAD
 						gdata['dknl_i_Grr'][ell].real,LP_src_deriv[0,ell],kd_i_Grr_full,
 						gdata['dknl_i_Phirr'][ell].real,LP_rcv_deriv[0,ell],kd_i_Phirr_full,
 						gdata['dknl_i_Ghr'][ell].real,LP_src_deriv_kd[ell],kd_i_Ghr_full,
@@ -161,15 +179,32 @@ def sum_over_l_for_omega(iOmega):
 						gdata['ssknl_Ghr'][ell],(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_src,
 						gdata['ssknl_Chirr'][ell],LP_rcv_deriv[0,ell],
 						gdata['ssknl_Chihr'][ell],(LP_rcv_deriv[2,ell]+LP_rcv_deriv_kss[ell]),kss_rcv,
+=======
+						gdata['xisrc_denkernel'][ell].real,LP_src_deriv[0,ell],kd_xisrc,
+						gdata['xircv'][ell].real,LP_rcv_deriv[0,ell],kd_xircv,
+						gdata['psrc_denkernel'][ell].real,LP_src_deriv_kd[ell],kd_psrc,
+						gdata['prcv'][ell].real,LP_rcv_deriv_kd[ell],kd_prcv,
+						norm
+						)
+		tensorproduct.outer_and_add_speed(
+						gdata['xisrc_sskernel'][ell].real,LP_src_deriv[0,ell],
+						gdata['psrc_sskernel'][ell].real,(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_src,
+						gdata['xircv_sskernel'][ell].real,LP_rcv_deriv[0,ell],
+						gdata['prcv_sskernel'][ell].real,(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_rcv,
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 						norm
 						)
 		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid
 	#~ print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
+<<<<<<< HEAD
 	kd_indv = ((-1)*(kd_i_Grr_full * kd_i_Phirr_full + Kd_i_Ghr_full * kd_i_Phihr_full)
                                                                                         +
 																						(kd_j_divG*kd_j_divPhi)
 																						+(kd_k_src*kd_k_rcv)	
 																						+(-1)*)
+=======
+	kd_indv = kd_xisrc * kd_xircv + kd_psrc * kd_prcv
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 	kd_xisrc,kd_xircv,kd_psrc,kd_prcv=None,None,None,None
 				 
 	kss_indv=kss_src * kss_rcv

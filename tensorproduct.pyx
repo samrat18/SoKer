@@ -18,6 +18,7 @@ cpdef outer_and_add_density(np.float64_t [:] fr1,
                             np.float64_t [:] fr4,
                             np.float64_t [:,::1] fthetaphi4,
                             np.float64_t [:,:,::1] result4,
+<<<<<<< HEAD
                             np.float64_t [:] fr5,                      
                             np.float64_t [:] fr6,
                             np.float64_t [:,::1] fthetaphi6,
@@ -37,6 +38,12 @@ cpdef outer_and_add_density(np.float64_t [:] fr1,
                             ):
     cdef unsigned int i,j,k, Nr,Ntheta,Nphi
     cdef double fr1i,fr2i,fr3i,fr4i,fr5i,fr6i,fr7i,fr8i
+=======
+                            double norm):
+    
+    cdef unsigned int i,j,k,Nr,Ntheta,Nphi
+    cdef double fr1i,fr2i,fr3i,fr4i
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
     
     Nr=fr1.shape[0]
     Ntheta=fthetaphi1.shape[0]
@@ -59,12 +66,16 @@ cpdef outer_and_add_density(np.float64_t [:] fr1,
         
         for j in xrange(Ntheta):
             for k in xrange(Nphi):
+<<<<<<< HEAD
                 
                 #term1
+=======
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
                 result1[i,j,k]=result1[i,j,k]+(fr1i*norm)*fthetaphi1[j,k]
                 result2[i,j,k]=result2[i,j,k]+(fr2i*norm)*fthetaphi2[j,k]
                 result3[i,j,k]=result3[i,j,k]+(fr3i*norm)*fthetaphi3[j,k]
                 result4[i,j,k]=result4[i,j,k]+(fr4i*norm)*fthetaphi4[j,k]
+<<<<<<< HEAD
                 
                 #term2
                 result5[i,j,k]=result5[i,j,k] +((fr5i*norm)*fthetaphi1[j,k]  +(fr6i*norm)*fthetaphi6[j,k])
@@ -74,6 +85,8 @@ cpdef outer_and_add_density(np.float64_t [:] fr1,
                 result7[i,j,k]=result7[i,j,k] +((fr9i*norm)*fthetaphi9[j,k])
                 result8[i,j,k]=result8[i,j,k] +((fr10i*norm)*fthetaphi2[j,k]  +(fr11i*norm)*fthetaphi11[j,k])
                 
+=======
+>>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 
 
 @cython.boundscheck(False)
