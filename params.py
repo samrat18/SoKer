@@ -6,7 +6,7 @@ def params():
 	codedir=os.getcwd()+'/SoKer'
 	nnode=15
 	ppn=16
-	ellmax =480
+	ellmax =256
 	numin = 1.5
 	numax = 4.7
 	damping_by_resolution_factor=4.0

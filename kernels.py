@@ -8,11 +8,7 @@ import errno
 import pandas as pd
 from time import gmtime, strftime
 
-<<<<<<< HEAD
-readme=pd.read_csv(os.getcwd()+'/SoKer/temp',sep='\t',header=None)
-=======
-readme=pd.read_csv('/home/samrat/temp',sep='\t',header=None)
->>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
+readme=pd.read_csv(os.getcwd()+'/temp',sep='\t',header=None)
 path=readme.iat[0,0]
 numin=readme.iat[0,1]
 numax=readme.iat[0,2]
@@ -31,12 +27,12 @@ omega_per_node=ndiv//nnode
 sin=np.sin
 cos=np.cos
 pi=np.pi
-src_lat = pi/2 
-src_lon = pi/5.5  
-rcv_lat = pi/2 
-rcv_lon = pi/3.5 
+src_lat = pi/2.5 
+src_lon = pi/6.  
+rcv_lat = pi/2.5 
+rcv_lon = pi/3. 
 
-directory_kSS = '/scratch/samrat/kernel/'+strftime("%Y-%m-%d", gmtime())+'|kss|ell-'+str(ellmax)+'src_lon_pi/5.5_rcv_lon_pi/3.5'+'-frequency-'+str(numin)+'mHzto'+str(numax)+'mHz-divisions-'+str(ndiv)
+directory_kSS = '/scratch/samrat/kernel/'+strftime("%Y-%m-%d", gmtime())+'-kss-l-'+str(ellmax)+'src_lon_piby6_rcv_lon_piby3'+'-nu-'+str(numin)+'mHzto'+str(numax)+'mHz-div-'+str(ndiv)
 if not os.path.isdir(directory_kSS):
     try:
         os.makedirs(directory_kSS)
@@ -45,7 +41,7 @@ if not os.path.isdir(directory_kSS):
             raise e
         pass
 
-directory_kD = '/scratch/samrat/kernel/'+strftime("%Y-%m-%d", gmtime())+'|kd|ell-'+str(ellmax)+'src_lon_pi/5.5_rcv_lon_pi/3.5'+'-frequency-'+str(numin)+'mHzto'+str(numax)+'mHz-divisions-'+str(ndiv)
+directory_kD = '/scratch/samrat/kernel/'+strftime("%Y-%m-%d", gmtime())+'-kd-l-'+str(ellmax)+'src_lon_piby6_rcv_lon_piby3'+'-nu-'+str(numin)+'mHzto'+str(numax)+'mHz-div-'+str(ndiv)
 if not os.path.isdir(directory_kD):
     try:
         os.makedirs(directory_kD)
@@ -76,13 +72,8 @@ def lat_lon(lat0,lon0,procid):
 	term4 = sin(lat0)*sin(lat)*cos(lon-lon0)
 	term5 = cos(lat0)*cos(lat)
 
-<<<<<<< HEAD
 	dcos_chi_dtheta =term2-term1
 	dcos_chi_dphi= -term3
-=======
-	dcos_chi_dtheta = term1 - term2
-	dcos_chi_dphi= term3
->>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 
 	kss_d2p_dcos = dcos_chi_dtheta**2 + dcos_chi_dphi**2
 	kss_dp_dcos = -2*(term4 + term5)
@@ -96,13 +87,10 @@ LP_src_deriv=np.empty((3,ellmax+1,nlat,nlon//ppn))
 PLegendre.compute_Pl_and_2_derivs_inplace(ellmax,cosine_chi_src,LP_src_deriv)
 cosine_chi_src =None
 
-<<<<<<< HEAD
 
 
 dcos_chi_dphi_src_3d=np.atleast_3d(dcos_chi_dphi_src).transpose(2,0,1)
 kd_term3_Gphir=LP_src_deriv[1]*dcos_chi_dphi_src_3d
-=======
->>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 kss_d2p_dcos_src_3d=np.atleast_3d(kss_d2p_dcos_src).transpose(2,0,1)
 kss_dp_dcos_src_3d=np.atleast_3d(kss_dp_dcos_src).transpose(2,0,1)
 kss_d2p_dcos_src, kss_dp_dcos_src= None,None
@@ -142,16 +130,11 @@ kd_dp_dcos_src_3d = None
 
 def sum_over_l_for_omega(iOmega):
 	   
-	kd_xisrc,kd_xircv,kd_psrc,kd_prcv,kss_src,kss_rcv = (np.zeros((nr,nlat,nlon//ppn),dtype=float) for i in range(6))
-
+	kd_i_Grr_full,kd_i_adjGrr_full,kd_i_Ghr_full,kd_i_adjGhr_full,kd_j_divG,kd_j_divadjG = (np.zeros((nr,nlat,nlon//ppn),dtype=float) for i in range(6))
+        kss_src,kss_rcv=(np.zeros((nr,nlat,nlon//ppn),dtype=float) for i in range(2))
 	filename = 'omega-'+str(iOmega).zfill(4)+'.npz'
 	npzfile = os.path.join(path,filename) 
-<<<<<<< HEAD
 	gdata=np.load(npzfile) 
-=======
-	gdata=np.load(npzfile)
-	gdata=gdata 
->>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
 	
 	#~ t2=time.time() 
 	for ell in xrange(ellmax+1):
@@ -159,53 +142,33 @@ def sum_over_l_for_omega(iOmega):
 		norm=(2.*ell+1.0)/(4*pi)
 		
 		tensorproduct.outer_and_add_density(
-<<<<<<< HEAD
-						gdata['dknl_i_Grr'][ell].real,LP_src_deriv[0,ell],kd_i_Grr_full,
-						gdata['dknl_i_Phirr'][ell].real,LP_rcv_deriv[0,ell],kd_i_Phirr_full,
-						gdata['dknl_i_Ghr'][ell].real,LP_src_deriv_kd[ell],kd_i_Ghr_full,
-						gdata['dknl_i_Phihr'][ell].real,LP_rcv_deriv_kd[ell],kd_i_Phihr_full,
+						gdata['dknl_i_Grr'][ell],LP_src_deriv[0,ell],kd_i_Grr_full,
+						gdata['dknl_i_adjGrr'][ell],LP_rcv_deriv[0,ell],kd_i_adjGrr_full,
+						gdata['dknl_i_Ghr'][ell],LP_src_deriv_kd[ell],kd_i_Ghr_full,
+						gdata['dknl_i_adjGhr'][ell],LP_rcv_deriv_kd[ell],kd_i_adjGhr_full,
 						gdata['dknl_j_Grr'][ell],
 						gdata['dknl_j_Ghr'][ell],(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kd_j_divG,
-						gdata['dknl_j_Phirr'][ell],
-						gdata['dknl_j_Phihr'][ell],(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kd_j_divPhi,
-						gdata['dknl_k_Gphir'][ell],	kd_term3_Gphir[ell],kd_k_src
-						gdata['dknl_k_Chirr'][ell],
-						gdata['dknl_k_Chihr'][ell],(LP_rcv_deriv[2,ell]+LP_rcv_deriv_kss[ell]),kd_k_rcv,
-												
+						gdata['dknl_j_adjGrr'][ell],
+						gdata['dknl_j_adjGhr'][ell],(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kd_j_divadjG,
+						#~ gdata['dknl_k_Gphir'][ell],	kd_term3_Gphir[ell],kd_k_src
+						#~ gdata['dknl_k_Chirr'][ell],
+						#~ gdata['dknl_k_Chihr'][ell],(LP_rcv_deriv[2,ell]+LP_rcv_deriv_kss[ell]),kd_k_rcv, 
 						norm
 						)
 		tensorproduct.outer_and_add_speed(
 						gdata['ssknl_Grr'][ell],LP_src_deriv[0,ell],
 						gdata['ssknl_Ghr'][ell],(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_src,
-						gdata['ssknl_Chirr'][ell],LP_rcv_deriv[0,ell],
-						gdata['ssknl_Chihr'][ell],(LP_rcv_deriv[2,ell]+LP_rcv_deriv_kss[ell]),kss_rcv,
-=======
-						gdata['xisrc_denkernel'][ell].real,LP_src_deriv[0,ell],kd_xisrc,
-						gdata['xircv'][ell].real,LP_rcv_deriv[0,ell],kd_xircv,
-						gdata['psrc_denkernel'][ell].real,LP_src_deriv_kd[ell],kd_psrc,
-						gdata['prcv'][ell].real,LP_rcv_deriv_kd[ell],kd_prcv,
-						norm
-						)
-		tensorproduct.outer_and_add_speed(
-						gdata['xisrc_sskernel'][ell].real,LP_src_deriv[0,ell],
-						gdata['psrc_sskernel'][ell].real,(LP_src_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_src,
-						gdata['xircv_sskernel'][ell].real,LP_rcv_deriv[0,ell],
-						gdata['prcv_sskernel'][ell].real,(LP_rcv_deriv[2,ell]+LP_src_deriv_kss[ell]),kss_rcv,
->>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
+						gdata['ssknl_adjGrr'][ell],LP_rcv_deriv[0,ell],
+						gdata['ssknl_adjGhr'][ell],(LP_rcv_deriv[2,ell]+LP_rcv_deriv_kss[ell]),kss_rcv,
 						norm
 						)
 		#~ print 'time taken for ell ',ell,' is ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid
-	#~ print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
-<<<<<<< HEAD
-	kd_indv = ((-1)*(kd_i_Grr_full * kd_i_Phirr_full + Kd_i_Ghr_full * kd_i_Phihr_full)
-                                                                                        +
-																						(kd_j_divG*kd_j_divPhi)
-																						+(kd_k_src*kd_k_rcv)	
-																						+(-1)*)
-=======
-	kd_indv = kd_xisrc * kd_xircv + kd_psrc * kd_prcv
->>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
-	kd_xisrc,kd_xircv,kd_psrc,kd_prcv=None,None,None,None
+        #~ print 'time taken ',(time.time() - t2),'sec','for iOmega',iOmega,'on proc no. ',coreid	
+        
+        kd_indv = ((-1)*(kd_i_Grr_full * kd_i_adjGrr_full + kd_i_Ghr_full * kd_i_adjGhr_full))
+                                                                        #~ +(kd_j_divG*kd_j_divadjG))
+                                                                                                
+        kd_i_Grr_full,kd_i_adjGrr_full,Kd_i_Ghr_full,kd_i_adjGhr_full,kd_j_divG,kd_j_divadjG=None,None,None,None,None,None
 				 
 	kss_indv=kss_src * kss_rcv
 	kss_src,kss_rcv=None,None

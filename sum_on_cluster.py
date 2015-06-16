@@ -4,12 +4,12 @@ import os
 import time
 t=time.time()
 
-directory_kSS = '/scratch/samrat/kernel/2015-06-10|kss|ell-480src_lon_pi/5.5_rcv_lon_pi/3.5-frequency-0.5mHzto5.5mHz-divisions-1000/'
-directory_kD = '/scratch/samrat/kernel/2015-06-10|kd|ell-480src_lon_pi/5.5_rcv_lon_pi/3.5-frequency-0.5mHzto5.5mHz-divisions-1000/'
+directory_kD = '/scratch/samrat/kernel/2015-06-16-kd-l-256src_lon_piby6_rcv_lon_piby3-nu-1.5mHzto4.7mHz-div-1580'
+directory_kSS = '/scratch/samrat/kernel/2015-06-16-kss-l-256src_lon_piby6_rcv_lon_piby3-nu-1.5mHzto4.7mHz-div-1580'
 nnode=15
 ppn=16
 nr=133
-nlat=496
+nlat=272
 nlon=2*nlat
 k_density=np.zeros((nr,nlat,1),dtype=float)
 k_soundspeed=np.zeros((nr,nlat,1),dtype=float)
@@ -23,11 +23,10 @@ for coreid in xrange(ppn):
 		dkernel=np.load(kDensityfile)
 		density_kernel_sum+=dkernel['density_kernel']
 		dkernel=None
-<<<<<<< HEAD
+
 		print 'done for density for nodeid and coreid ',nodeid,coreid,'in time',(time.time()-t1),'sec'
-=======
-		print 'Now loading density for nodeid and coreid ',nodeid,coreid,'in time',(time.time()-t1),'sec'
->>>>>>> 03d9fe0e6ac5c1b70e0c52a7c8f75de2d1ce8ca0
+		
+
 	k_density=np.dstack((k_density,density_kernel_sum))
 k_density=np.delete(k_density,0,2)
 np.savez(os.path.join(directory_kD,'kernel_d'),kernel_d=k_density)
